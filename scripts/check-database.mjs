@@ -1,0 +1,32 @@
+import {PGlite} from '@electric-sql/pglite';
+import {readFile,readdir} from 'node:fs/promises';import assert from 'node:assert/strict';
+const db=new PGlite();
+await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}');create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;grant usage on schema auth to authenticated,service_role;grant execute on function auth.uid() to authenticated;create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);`);
+for(const file of (await readdir('supabase/migrations')).sort()){console.log('Applying',file);await db.exec(await readFile('supabase/migrations/'+file,'utf8'));}
+const a='11111111-1111-4111-8111-111111111111',b='22222222-2222-4222-8222-222222222222',teacher='33333333-3333-4333-8333-333333333333',student='44444444-4444-4444-8444-444444444444';
+await db.exec(`insert into auth.users(id,email)values('${a}','a@example.invalid'),('${b}','b@example.invalid'),('${teacher}','t@example.invalid'),('${student}','s@example.invalid');grant usage on schema public to authenticated;`);
+async function asUser(id,sql,params=[]){await db.exec(`set role authenticated;select set_config('request.jwt.claim.sub','${id}',false);`);try{return await db.query(sql,params);}finally{await db.exec('reset role');}}
+const orgA=(await asUser(a,'select create_organization($1) id',['Demo A'])).rows[0].id;
+const orgB=(await asUser(b,'select create_organization($1) id',['Demo B'])).rows[0].id;
+assert.equal((await asUser(a,'select id from organizations where id=$1',[orgB])).rows.length,0);
+const child=(await asUser(a,'select create_learner($1,$2,$3) id',['Demo learner','11–13','uz'])).rows[0].id;
+assert.equal((await asUser(b,'select id from learner_profiles where id=$1',[child])).rows.length,0);
+await assert.rejects(asUser(a,"update profiles set role='PLATFORM_ADMIN' where id=$1",[a]));
+await assert.rejects(asUser(a,"insert into organization_members values($1,$2,'ORG_OWNER',true)",[orgB,a]));
+const project=(await asUser(a,"insert into projects(title,description,organization_id,learner_id) values('Demo','A safe idea',$1,$2) returning id",[orgA,child])).rows[0].id;
+assert.equal((await asUser(b,'select id from projects where id=$1',[project])).rows.length,0);
+await assert.rejects(asUser(a,'update projects set stage=7 where id=$1',[project]));
+const key='55555555-5555-4555-8555-555555555555';
+const entry=(await asUser(a,"insert into ledger_entries(project_id,kind,mode,amount,idempotency_key) values($1,'revenue','practice',10000,$2) returning id",[project,key])).rows[0].id;
+await assert.rejects(asUser(a,"insert into ledger_entries(project_id,kind,mode,amount,idempotency_key) values($1,'revenue','practice',10000,$2)",[project,key]));
+await asUser(a,'update ledger_entries set amount=99999 where id=$1',[entry]);
+assert.equal(Number((await asUser(a,'select amount from ledger_entries where id=$1',[entry])).rows[0].amount),10000);
+const correctionKey='66666666-6666-4666-8666-666666666666';
+const corrected=(await asUser(a,'select correct_ledger($1,9000,0,$2,$3) id',[entry,'Typo corrected',correctionKey])).rows[0].id;
+assert.equal((await asUser(a,'select correct_ledger($1,9000,0,$2,$3) id',[entry,'Typo corrected',correctionKey])).rows[0].id,corrected);
+const sim=(await asUser(a,"select (start_simulation('bracelet',42)).*" )).rows[0];
+const round=(await asUser(a,'select play_simulation($1,1,3,6500) result',[sim.id])).rows[0].result;
+assert.equal(round.data.round,1);await assert.rejects(asUser(a,'select play_simulation($1,1,3,6500)',[sim.id]));
+const fields=(await db.query("select tablename from pg_tables where schemaname='public' and not rowsecurity")).rows;assert.equal(fields.length,0);
+console.log(JSON.stringify({migrationFiles:'all',tenantIsolation:true,guardianIsolation:true,roleEscalationDenied:true,ledgerImmutable:true,ledgerIdempotent:true,simulationDoubleRoundDenied:true,allPublicTablesRLS:true}));
+await db.close();

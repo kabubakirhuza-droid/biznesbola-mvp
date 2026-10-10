@@ -1,0 +1,64 @@
+import type { CatalogProduct } from "../src/domain/catalog.js";
+// Verified seller data. Preserve checkedAt when the source is unavailable.
+export const verifiedProducts: CatalogProduct[] = [
+  {
+    "id": "iphone-16",
+    "name": "Apple iPhone 16 128GB (1 SIM + 1 eSim) White smartfoni",
+    "image": "https://assets.asaxiy.uz/product/main_image/desktop/66f6994586088.webp",
+    "price": 10899000,
+    "currency": "UZS",
+    "source": "https://asaxiy.uz/product/smartfon-apple-iphone-16-128gb-white",
+    "checkedAt": "2026-10-10T11:58:28.769Z",
+    "available": true
+  },
+  {
+    "id": "galaxy-a16",
+    "name": "Samsung Galaxy A16 4/128GB Black smartfoni",
+    "image": "https://assets.asaxiy.uz/product/main_image/desktop/673b34c9d2aab.jpg.webp",
+    "price": 2109000,
+    "currency": "UZS",
+    "source": "https://asaxiy.uz/product/smartfon-samsung-galaxy-a16-4128gb-black",
+    "checkedAt": "2026-10-10T11:58:28.730Z",
+    "available": false
+  },
+  {
+    "id": "himo-h1",
+    "name": "Xiaomi HIMO Portable Electric Bicycle (Gray) yig‘iladigan elektrvelosiped",
+    "image": "https://assets.asaxiy.uz/product/main_image/desktop/625fcc314826e.jpg.webp",
+    "price": 5689000,
+    "currency": "UZS",
+    "source": "https://asaxiy.uz/product/elektrovelosiped-skladnoi-xiaomi-himo-h1-portable-electric-bicycle-grey",
+    "checkedAt": "2026-10-10T12:00:37.233Z",
+    "available": false
+  },
+  {
+    "id": "lenovo-v15",
+    "name": "Lenovo V15 G4 AMN,  Amd 7120U, DDR5 8Gb, SSD 512Gb, 15.6\" FullHD Noutbuki",
+    "image": "https://assets.asaxiy.uz/product/main_image/desktop/64ad2f9d80dba.jpg.webp",
+    "price": 3149000,
+    "currency": "UZS",
+    "source": "https://asaxiy.uz/product/noutbuk-lenovo-v15-g4-amn-amd-7120u-ddr5-8gb-ssd-512gb-156-fullhd",
+    "checkedAt": "2026-10-10T12:00:37.247Z",
+    "available": false
+  },
+  {
+    "id": "redmi-buds",
+    "name": "Redmi Buds 6 Play White simsiz quloqchini",
+    "image": "https://assets.asaxiy.uz/product/main_image/desktop/676021909c27d.png.webp",
+    "price": 159000,
+    "currency": "UZS",
+    "source": "https://asaxiy.uz/product/besprovodnye-naushniki-redmi-buds-6-play-belye",
+    "checkedAt": "2026-10-10T12:00:37.292Z",
+    "available": true
+  },
+  {
+    "id": "sariq-dev",
+    "name": "Xudoyberdi To‘xtaboyev: Sariq devni minib",
+    "image": "https://assets.asaxiy.uz/product/main_image/desktop/605b269faf077.png.webp",
+    "price": 36300,
+    "currency": "UZS",
+    "source": "https://asaxiy.uz/product/hudojberdi-tuhtaboev-sariq-devni-minib",
+    "checkedAt": "2026-10-10T12:00:37.403Z",
+    "available": true
+  }
+];

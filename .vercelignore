@@ -1,0 +1,10 @@
+node_modules
+.npm-cache
+reports
+playwright-report
+test-results
+.env*
+!.env.example
+docs
+e2e
+src/tests

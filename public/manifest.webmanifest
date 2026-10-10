@@ -1,0 +1,16 @@
+{
+  "name": "BiznesBola",
+  "short_name": "BiznesBola",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF9E8",
+  "theme_color": "#FFC83D",
+  "icons": [
+    {
+      "src": "/mascot-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

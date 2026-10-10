@@ -1,0 +1,13 @@
+# Dream product catalog
+
+The guest onboarding, dashboard savings card and wallet share a product selector. The initial catalog has six retailer listings: two phone models and one bicycle, laptop, headphones and book. Searching a category lists its models. Unsupported exact models return an empty result; they are never silently replaced by a different model.
+
+`GET /api/products?q=telefon` or `GET /api/products?id=iphone-16` reads ASAXIY Product JSON-LD on the server. Only fixed catalog URLs can be fetched. The returned fields are product name, photo URL, full price in UZS, availability, source URL and verification timestamp. No AI-generated price or installment amount is used. Successful results are cached for 15 minutes; failed fetches are not cached. Requests time out after 8 seconds and responses are limited to 2 MB. Images must use the approved retailer asset host.
+
+Selecting a product updates the guest goal amount and photo together. Guest choices remain in the existing guest store and survive reloads; this does not claim account synchronization. Existing manually entered goals retain their amounts and are explicitly labeled manual until a catalog product is selected. Unavailable products show their stock status. Source failures and missing images have visible states.
+
+Verification on 2026-10-10: all six listings returned actual source data through the local API; build and lint passed; 22 unit tests passed. The new browser flow checks exact-model absence, phone selection, loaded image, seller price, persistence, wallet consistency, image/title separation and horizontal overflow at 360, 390, 768 and 1280 px. A separate 1440 px visual check passed. This change was tested locally at port 5188; it has not been deployed in this change.
+
+Add a listing to `src/domain/catalog.ts` using a verified retailer slug and category/search terms. Prices and images stay on the server source path rather than being fabricated or hardcoded in the client. This is an initial catalog, not a universal product search service.
+
+Deployment update: all API paths now dispatch through `api/router.ts` to handlers in `server/handlers`, using one serverless function to fit the Vercel Hobby limit. Production requests to the retailer can fail even when local requests work. In that case the server returns the last independently verified seller snapshot with `sourceStatus: "snapshot"`, retaining its original verification timestamp. The selector and dream card explicitly identify this state. Snapshot data must never be presented as a fresh live quote. Run `node scripts/refresh-product-catalog.mjs` with the local server running at port 5188 to refresh the verified listings before deployment; the script rejects fallback data.

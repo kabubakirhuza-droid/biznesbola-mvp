@@ -1,0 +1,11 @@
+begin;
+create table public.ai_conversations(id uuid primary key default gen_random_uuid(),owner_id uuid not null references public.profiles,project_id uuid references public.projects,created_at timestamptz not null default now());
+create table public.ai_messages(id uuid primary key default gen_random_uuid(),conversation_id uuid not null references public.ai_conversations on delete cascade,role text not null check(role in ('user','assistant')),text text not null check(length(text) between 1 and 6500),fallback boolean not null default true,created_at timestamptz not null default now());
+alter table ai_conversations enable row level security;alter table ai_messages enable row level security;
+grant select,insert on ai_conversations,ai_messages to authenticated;
+create policy own_conversation on ai_conversations for select to authenticated using(owner_id=auth.uid() and profile_active());
+create policy create_conversation on ai_conversations for insert to authenticated with check(owner_id=auth.uid() and profile_active() and (project_id is null or can_project(project_id)));
+create policy private_message on ai_messages for select to authenticated using(exists(select 1 from ai_conversations where id=conversation_id and owner_id=auth.uid()) and profile_active());
+create policy user_message on ai_messages for insert to authenticated with check(role='user' and exists(select 1 from ai_conversations where id=conversation_id and owner_id=auth.uid()) and profile_active());
+create index conversation_owner on ai_conversations(owner_id,created_at desc);create index message_conversation on ai_messages(conversation_id,created_at);
+commit;
